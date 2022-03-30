@@ -104,7 +104,7 @@ TWO_FA_INPUT_EL_ID = os.environ.get('IBEAM_TWO_FA_INPUT_EL_ID', 'chlginput')
 TWO_FA_HANDLER = os.environ.get('IBEAM_TWO_FA_HANDLER', None)
 """Which 2FA handler should be used to acquire the code."""
 
-STRICT_TWO_FA_CODE = bool(os.environ.get('IBEAM_STRICT_TWO_FA_CODE', True))
+STRICT_TWO_FA_CODE = bool(os.environ.get('IBEAM_STRICT_TWO_FA_CODE', False))
 """Whether to ensure only 2FA code made of 6 digits can be used."""
 
 all_variables = {item: value for item, value in vars().items() if (not item.startswith("__") and item.isupper())}

@@ -34,7 +34,7 @@ class GoogleMessagesTwoFaHandler(TwoFaHandler):
     def __init__(self, driver_path):
         self.driver_path = driver_path
 
-    def get_two_fa_code(self) -> Union[str, None]:
+    def get_two_fa_code(self, challenge_string: str = None) -> Union[str, None]:
         code_two_fa = None
 
         driver_2fa = new_chrome_driver(self.driver_path, name='google_msg')

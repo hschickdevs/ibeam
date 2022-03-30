@@ -13,7 +13,7 @@ from typing import Union
 from cryptography.fernet import Fernet
 from pyvirtualdisplay import Display
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException, StaleElementReferenceException, TimeoutException
+from selenium.common.exceptions import WebDriverException, StaleElementReferenceException, TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -201,8 +201,14 @@ def authenticate_gateway(driver_path,
             if trigger_id == var.TWO_FA_EL_ID:
                 _LOGGER.info(f'Credentials correct, but Gateway requires two-factor authentication.')
 
-                # EC.visibility_of_element_located((By.ID, var.chlg_SWCR))
-                two_fa_code = handle_two_fa(two_fa_handler)
+                try:
+                    challenge_string = driver.find_element_by_id("chlg_SWCR").text
+                    _LOGGER.info("Located the challeneg string elment for 2FA.")
+                except NoSuchElementException:
+                    challenge_string = None
+                    _LOGGER.info("Could not locate challenge string element for 2FA.")
+
+                two_fa_code = handle_two_fa(two_fa_handler, challenge_string=challenge_string)
 
                 if two_fa_code is None:
                     _LOGGER.warning(f'No 2FA code returned. Aborting authentication.')
@@ -290,16 +296,15 @@ def start_driver(base_url, driver_path) -> Union[webdriver.Chrome, None]:
     return driver
 
 
-def handle_two_fa(two_fa_handler) -> Union[str, None]:
+def handle_two_fa(two_fa_handler, challenge_string: str = None) -> Union[str, None]:
     if two_fa_handler is None:
         _LOGGER.info(
             f'No 2FA handler found. You may define your own 2FA handler or use built-in handlers. See documentation for more.')
         return None
     else:
         _LOGGER.info(f'Attempting to acquire 2FA code from: {two_fa_handler}')
-
         try:
-            two_fa_code = two_fa_handler.get_two_fa_code()
+            two_fa_code = two_fa_handler.get_two_fa_code(challenge_string=challenge_string)
             if two_fa_code is not None:
                 two_fa_code = str(two_fa_code)  # in case someone returns an integer
         except Exception as two_fa_exception:
