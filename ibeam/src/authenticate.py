@@ -203,7 +203,7 @@ def authenticate_gateway(driver_path,
 
                 try:
                     challenge_string = driver.find_element_by_id("chlg_SWCR").text
-                    _LOGGER.info("Located the challeneg string elment for 2FA.")
+                    _LOGGER.info("Located the challenge string element for 2FA.")
                 except NoSuchElementException:
                     challenge_string = None
                     _LOGGER.info("Could not locate challenge string element for 2FA.")
