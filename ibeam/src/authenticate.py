@@ -200,6 +200,8 @@ def authenticate_gateway(driver_path,
             # handle 2FA
             if trigger_id == var.TWO_FA_EL_ID:
                 _LOGGER.info(f'Credentials correct, but Gateway requires two-factor authentication.')
+
+                # EC.visibility_of_element_located((By.ID, var.chlg_SWCR))
                 two_fa_code = handle_two_fa(two_fa_handler)
 
                 if two_fa_code is None:
