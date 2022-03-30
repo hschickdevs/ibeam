@@ -83,6 +83,7 @@ WORKDIR $SRC_ROOT
 USER $USER_NAME
 
 #CMD python ./ibeam_starter.py
-ENTRYPOINT ["/srv/ibeam/run.sh"]
+ENTRYPOINT ["chmod", "+x", "/srv/ibeam/run.sh"]
+# ENTRYPOINT ["/srv/ibeam/run.sh"]
 #ENTRYPOINT ["bash"]
 #CMD ["/bin/sh", "/srv/ibeam/run.sh"]
