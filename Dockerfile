@@ -82,9 +82,9 @@ WORKDIR $SRC_ROOT
 
 USER $USER_NAME
 
-RUN apt-get install -y sudo 
-RUN sudo chmod a+x /srv/ibeam/run.sh
-ENTRYPOINT ["/srv/ibeam/run.sh"]
+# RUN apt-get install -y sudo 
+# RUN sudo chmod a+x /srv/ibeam/run.sh
+ENTRYPOINT ["sh", "/srv/ibeam/run.sh"]
 
 #CMD python ./ibeam_starter.py
 # ENTRYPOINT ["/srv/ibeam/run.sh"]
