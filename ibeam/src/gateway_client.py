@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import time
+import json
 from getpass import getpass
 
 from pathlib import Path
@@ -117,7 +118,7 @@ class GatewayClient():
     # def _reauthenticate(self):
     #     self._try_request(self.base_url + _ROUTE_REAUTHENTICATE, False)
 
-    def try_authenticating(self, request_retries=1) -> (bool, bool):
+    def try_authenticating(self, request_retries=var.REQUEST_RETRIES) -> (bool, bool):
         status = self.get_status(max_attempts=request_retries)
         if status[2]:  # running and authenticated
             return True, False
@@ -126,7 +127,13 @@ class GatewayClient():
             return False, False
         else:
             if status[1]:
-                _LOGGER.info('Gateway session found but not authenticated, authenticating...')
+                msg = 'Gateway session found but not authenticated, authenticating...'
+                try:
+                    msg += f" (Failure Reason: {self.get_auth_fail_reason()})"
+                except:
+                    # Accounts for unexpected issue (this feature is not necessary)
+                    pass
+                _LOGGER.info(msg)
 
                 """
                 Annoyingly this is an async request that takes arbitrary amount of time and returns no
@@ -147,7 +154,7 @@ class GatewayClient():
             time.sleep(3)  # buffer for session to be authenticated
 
             # double check if authenticated
-            status = self.get_status(max_attempts=max(request_retries, 2))
+            status = self.get_status(max_attempts=request_retries)
             if not status[2]:
                 if status[1]:
                     _LOGGER.error('Gateway session active but not authenticated')
@@ -159,8 +166,16 @@ class GatewayClient():
 
         return True, False
 
-    def get_status(self, max_attempts=1) -> (bool, bool, bool):
+    def get_status(self, max_attempts=var.REQUEST_RETRIES) -> (bool, bool, bool):
         return self.http_handler.try_request(self.base_url + var.ROUTE_TICKLE, True, max_attempts=max_attempts)
+
+    def get_auth_fail_reason(self) -> str:
+        try:
+            r = json.loads(self.http_handler.url_request(self.base_url + var.ROUTE_AUTH_STATUS).read().decode('utf8'))
+            return r["fail"]
+        except Exception as e:
+            _LOGGER.error(f'Failed to get auth failure reason: {e}')
+            return "None"
 
     def validate(self) -> bool:
         return self.http_handler.try_request(self.base_url + var.ROUTE_VALIDATE, False)[1]
@@ -175,8 +190,11 @@ class GatewayClient():
         except Exception as e:
             _LOGGER.exception(e)
 
-    def start_and_authenticate(self, request_retries=1) -> (bool, bool):
-        """Starts the gateway and authenticates using the credentials stored."""
+    def start_and_authenticate(self, request_retries=2) -> (bool, bool):
+        """
+        Starts the gateway and authenticates using the credentials stored.
+        Gets 2 retries only since this is the initial gateway startup sequence.
+        """
 
         self.try_starting()
 

@@ -32,7 +32,7 @@ LOG_LEVEL = os.environ.get('IBEAM_LOG_LEVEL', 'INFO')
 LOG_TO_FILE = bool(os.environ.get('IBEAM_LOG_TO_FILE', True))
 """Whether logs should also be saved to a file."""
 
-REQUEST_RETRIES = int(os.environ.get('IBEAM_REQUEST_RETRIES', 1))
+REQUEST_RETRIES = int(os.environ.get('IBEAM_REQUEST_RETRIES', 5))
 """How many times to reattempt a request to the gateway."""
 
 REQUEST_TIMEOUT = int(os.environ.get('IBEAM_REQUEST_TIMEOUT', 15))
