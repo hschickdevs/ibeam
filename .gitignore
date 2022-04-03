@@ -6,3 +6,4 @@ ibeam.egg-info
 .DS_Store
 .idea
 testing.py
+*.pyc

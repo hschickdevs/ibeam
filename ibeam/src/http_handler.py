@@ -60,7 +60,7 @@ class HttpHandler():
                     return True, False, False  # we expect this error, no need to log
                 elif e.code == 500 and "internal" in str(e).lower():
                     # Likely an internal server error from the VM provider, try again
-                    _LOGGER.error(f'Encountered an HTTP error {e.code} from {url}. Likely an internal server error if hosted on a VM.')
+                    _LOGGER.error(f'Encountered an internal server HTTP error {e.code} from {url}')
                 else:  # todo: possibly other codes could appear when not authenticated, fix when necessary
                     try:
                         raise RuntimeError('Unrecognised HTTPError') from e
