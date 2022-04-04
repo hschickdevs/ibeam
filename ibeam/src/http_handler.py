@@ -4,6 +4,7 @@ import os
 import shutil
 import socket
 import ssl
+import time
 from pathlib import Path
 from ibeam.src import var
 from urllib.error import HTTPError, URLError
@@ -60,7 +61,8 @@ class HttpHandler():
                     return True, False, False  # we expect this error, no need to log
                 elif e.code == 500 and "internal" in str(e).lower():
                     # Likely an internal server error from the VM provider, try again
-                    _LOGGER.error(f'Encountered an internal server HTTP error {e.code} from {url}')
+                    _LOGGER.error(f'Encountered an internal server HTTP error {e.code} from {url} - 5 second retry delay')
+                    time.sleep(5)
                 else:  # todo: possibly other codes could appear when not authenticated, fix when necessary
                     try:
                         raise RuntimeError('Unrecognised HTTPError') from e
