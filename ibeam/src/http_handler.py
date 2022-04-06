@@ -63,7 +63,9 @@ class HttpHandler():
                     # Likely an internal server error from the VM provider, try again
                     _LOGGER.error(f'Encountered an internal server HTTP error {e.code} from {url} - 5 second retry delay')
                     time.sleep(5)
-                else:  # todo: possibly other codes could appear when not authenticated, fix when necessary
+                    # FIXME: The client encountered an internal server error, and didn't retry:
+                    #        Encountered an internal server HTTP error 500 from https://localhost:5000/v1/api/tickle - 5 second retry delay
+                else:
                     try:
                         raise RuntimeError('Unrecognised HTTPError') from e
                     except Exception as ee:
