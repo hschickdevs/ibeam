@@ -53,7 +53,7 @@ class TelegramMessageHandler(TwoFaHandler):
             time.sleep(10)
         else:
             # General condition for other errors - 1 second delay before retrying
-            _LOGGER.error(f"Telegram API returned an error code: {r.status_code, r.text} - 3 second retry delay")
+            _LOGGER.error(f"Telegram API returned an error code: {r.status_code, r.text} - 1 second retry delay")
             time.sleep(1)
 
         return self.http_request(_type, url, data, _try + 1)
