@@ -19,6 +19,7 @@ TELEGRAM_ADMIN_IDS = os.environ.get('IBEAM_TELEGRAM_ADMIN_IDS', None)
 BASE_PROMPT_MSG = "The IBKR Gateway requires a new 2FA code."
 MAXIMUM_RETRIES = 5
 AWAIT_TIMEOUT = 43200  # 12 hours
+POLLING_INTERVAL = 2
 
 
 class TelegramMessageHandler(TwoFaHandler):
@@ -88,3 +89,4 @@ class TelegramMessageHandler(TwoFaHandler):
                         failed_attempts.append(upd_id)
                         self.alert_admins("Could not parse code from message.\nPlease use the following format:"
                                           "\nCODE: 12345678")
+            time.sleep(POLLING_INTERVAL)
