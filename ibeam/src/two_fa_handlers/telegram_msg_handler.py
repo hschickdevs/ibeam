@@ -49,13 +49,15 @@ class TelegramMessageHandler(TwoFaHandler):
             return r.json()
         elif r.status_code == 500:
             # Specific condition for the Google Cloud service being used - 10 seconds delay before retrying
-            _LOGGER.error(f"Internal server error (500) thrown when attempting to {_type} from Telegram API - "
-                          f"10 second retry delay")
-            time.sleep(10)
-        else:
-            # General condition for other errors - 1 second delay before retrying
-            _LOGGER.error(f"Telegram API returned an error code: {r.status_code, r.text} - 1 second retry delay")
+            _LOGGER.error(f"Internal server error (500) thrown when attempting to {_type} to Telegram API - "
+                          f"1 second delay before retrying")
+            # Quick retry without incrementing the retry count
             time.sleep(1)
+            return self.http_request(_type, url, data, _try)
+        else:
+            # General condition for other errors - 3 second delay before retrying
+            _LOGGER.error(f"Telegram API returned an error code: {r.status_code, r.text} - 3 second retry delay")
+            time.sleep(3)
 
         return self.http_request(_type, url, data, _try + 1)
 
