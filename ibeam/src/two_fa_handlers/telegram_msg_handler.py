@@ -33,7 +33,7 @@ class TelegramMessageHandler(TwoFaHandler):
         self.alert_admins(message)
         return self.await_2fa_code()
 
-    def http_request(self, _type: str, url: str, data: dict = None, _try: int = 1) -> dict:
+    def http_request(self, _type: str, url: str, data: dict = None, _try: int = 1, retry_delay: float = 1) -> dict:
         """Attempt to make an http request to the given url. If the request fails, retry with recursion"""
         if _try > MAXIMUM_RETRIES:
             raise ConnectionError(f"Could not connect to Telegram API after 5 attempts with url: {url}")
@@ -48,18 +48,19 @@ class TelegramMessageHandler(TwoFaHandler):
         if r.status_code == 200:
             return r.json()
         elif r.status_code == 500:
-            # Specific condition for the Google Cloud service being used - 10 seconds delay before retrying
+            # Specific condition for the Google Cloud service being used
             _LOGGER.error(f"Internal server error (500) thrown when attempting to {_type} to Telegram API - "
-                          f"1 second delay before retrying")
-            # Quick retry without incrementing the retry count
-            time.sleep(1)
-            return self.http_request(_type, url, data, _try)
+                          f"{retry_delay} second delay before retrying (attempt {_try})")
+            # Quick exponential retry delay without incrementing the retry count
+            time.sleep(retry_delay)
+            return self.http_request(_type, url, data, _try, retry_delay * 1.1)
         else:
-            # General condition for other errors - 3 second delay before retrying
-            _LOGGER.error(f"Telegram API returned an error code: {r.status_code, r.text} - 3 second retry delay")
-            time.sleep(3)
+            # General condition for other errors - Exponential retry delay before retrying
+            _LOGGER.error(f"Telegram API returned an error code: {r.status_code, r.text} - "
+                          f"{retry_delay} second delay before retrying (attempt {_try}/{MAXIMUM_RETRIES})")
+            time.sleep(retry_delay)
 
-        return self.http_request(_type, url, data, _try + 1)
+        return self.http_request(_type, url, data, _try + 1, retry_delay * 1.5)
 
     def alert_admins(self, message):
         """For each admin in ADMIN_IDS, send a post request using urllib3 to alert them of the 2FA code request"""

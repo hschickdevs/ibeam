@@ -61,8 +61,8 @@ class HttpHandler():
                     return True, False, False  # we expect this error, no need to log
                 elif e.code == 500 and "internal" in str(e).lower():
                     # Likely an internal server error from the VM provider, try again
-                    _LOGGER.error(f'Encountered an internal server HTTP error {e.code} from {url} - 10 second retry delay')
-                    time.sleep(10)
+                    _LOGGER.error(f'Encountered an internal server HTTP error {e.code} from {url} - 2 second retry delay')
+                    time.sleep(2)
                     # FIXME: The client encountered an internal server error, and didn't retry:
                     #        Encountered an internal server HTTP error 500 from https://localhost:5000/v1/api/tickle - 5 second retry delay
                 else:
