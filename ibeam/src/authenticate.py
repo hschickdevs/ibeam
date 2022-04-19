@@ -191,6 +191,7 @@ def authenticate_gateway(driver_path,
                                                             var.SUCCESS_EL_TEXT)
             two_factor_input_present = EC.visibility_of_element_located((By.ID, var.TWO_FA_EL_ID))
             error_displayed = EC.visibility_of_element_located((By.ID, var.ERROR_EL_ID))
+            ibkey_promo_skip_clickable = EC.element_to_be_clickable((By.CLASS_NAME, var.IBKEY_PROMO_EL_CLASS))
 
             trigger = WebDriverWait(driver, var.OAUTH_TIMEOUT).until(
                 any_of(success_present, two_factor_input_present, error_displayed))
@@ -214,14 +215,26 @@ def authenticate_gateway(driver_path,
                     _LOGGER.warning(f'No 2FA code returned. Aborting authentication.')
                 else:
                     two_fa_el = driver.find_elements_by_id(var.TWO_FA_INPUT_EL_ID)
+                    WebDriverWait(driver, var.OAUTH_TIMEOUT).until(
+                        EC.element_to_be_clickable((By.ID, var.TWO_FA_INPUT_EL_ID)))
                     two_fa_el[0].send_keys(two_fa_code)
 
                     _LOGGER.debug('Submitting the 2FA form')
                     submit_form_el = driver.find_element_by_id(var.SUBMIT_EL_ID)
+                    WebDriverWait(driver, var.OAUTH_TIMEOUT).until(
+                        EC.element_to_be_clickable((By.ID, var.SUBMIT_EL_ID)))
                     submit_form_el.click()
 
-                    trigger = WebDriverWait(driver, var.OAUTH_TIMEOUT).until(any_of(success_present, error_displayed))
+                    trigger = WebDriverWait(driver, var.OAUTH_TIMEOUT).until(
+                        any_of(success_present, error_displayed, ibkey_promo_skip_clickable))
                     trigger_id = trigger.get_attribute('id')
+
+            trigger_class = trigger.get_attribute('class')
+
+            if trigger_class == var.IBKEY_PROMO_EL_CLASS:
+                _LOGGER.debug('Handling IB-Key promo display...')
+                trigger.click()
+                WebDriverWait(driver, 10).until(success_present)
 
             if trigger_id == var.ERROR_EL_ID:
                 _LOGGER.error(f'Error displayed by the login webpage: {trigger.text}')
@@ -232,7 +245,7 @@ def authenticate_gateway(driver_path,
                     global _FAILED_ATTEMPTS
                     _FAILED_ATTEMPTS += 1
                     if _FAILED_ATTEMPTS >= var.MAX_FAILED_AUTH:
-                        _LOGGER.error(
+                        _LOGGER.critical(
                             f'######## ATTENTION! ######## Maximum number of failed authentication attempts (IBEAM_MAX_FAILED_AUTH={var.MAX_FAILED_AUTH}) reached. IBeam will shut down to prevent an account lock-out. It is recommended you attempt to authenticate manually in order to reset the counter. Read the execution logs and report issues at https://github.com/Voyz/ibeam/issues')
                         return False, True
 

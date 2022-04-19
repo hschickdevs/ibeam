@@ -107,4 +107,7 @@ TWO_FA_HANDLER = os.environ.get('IBEAM_TWO_FA_HANDLER', None)
 STRICT_TWO_FA_CODE = bool(os.environ.get('IBEAM_STRICT_TWO_FA_CODE', False))
 """Whether to ensure only 2FA code made of 6 digits can be used."""
 
+IBKEY_PROMO_EL_CLASS = os.environ.get('IBEAM_IBKEY_PROMO_EL_CLASS', 'ibkey-promo-skip')
+"""HTML element class containing the ibkey promo skip button."""
+
 all_variables = {item: value for item, value in vars().items() if (not item.startswith("__") and item.isupper())}
