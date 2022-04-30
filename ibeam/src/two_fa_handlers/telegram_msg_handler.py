@@ -78,6 +78,9 @@ class TelegramMessageHandler(TwoFaHandler):
 
             updates = self.http_request('GET', f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates')['result']
             for update in updates:
+                if 'message' not in update.keys():
+                    continue
+
                 upd_id = update['update_id']
                 timestamp = update['message']['date']
                 message = update['message']['text']
